@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swipe Once® - Something is Coming</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        /* ===================
+           VIDEO BACKGROUND SETUP
+        =================== */
+        .hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        /* Video Container */
+        .video-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* Video Element */
+        .background-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            filter: blur(2px) brightness(0.7);
+        }
+        
+        /* Fallback Background Image */
+        .video-fallback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 0;
+        }
+        
+        /* Color Overlay */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg, 
+                rgba(253, 41, 123, 0.4) 0%, 
+                rgba(255, 101, 91, 0.3) 50%,
+                rgba(102, 126, 234, 0.4) 100%
+            );
+            z-index: 2;
+        }
+        
+        /* Content Layer */
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+        
+        /* Typography */
+        .hero-title {
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 900;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 20px rgba(0, 0, 0, 0.5);
+            letter-spacing: -2px;
+        }
+        
+        .trademark {
+            font-size: 0.6em;
+            vertical-align: super;
+            opacity: 0.8;
+        }
+        
+        .hero-subtitle {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            margin-bottom: 50px;
+            opacity: 0.9;
+            text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Interactive Elements */
+        .countdown-container {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 40px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .countdown-item {
+            text-align: center;
+            min-width: 80px;
+        }
+        
+        .countdown-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .countdown-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Email Capture */
+        .email-section {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 500px;
+            margin: 50px auto 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .email-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        
+        .email-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .email-input {
+            padding: 18px 25px;
+            font-size: 1.1rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .email-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .email-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .submit-button {
+            padding: 18px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff4757, #ffa502);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+        }
+        
+        /* Video Controls (Hidden by default) */
+        .video-controls {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            z-index: 15;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Loading State */
+        .video-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            opacity: 1;
+            transition: opacity 1s ease;
+        }
+        
+        .video-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .countdown {
+                gap: 20px;
+            }
+            
+            .countdown-item {
+                min-width: 70px;
+            }
+            
+            .countdown-number {
+                font-size: 2rem;
+            }
+            
+            .email-section {
+                margin: 30px 20px 0;
+                padding: 30px 20px;
+            }
+            
+            .video-controls {
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .control-btn {
+                width: 45px;
+                height: 45px;
+            }
+        }
+        
+        /* Performance optimizations */
+        .background-video {
+            will-change: transform;
+            transform: translateZ(0);
+        }
+        
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            .background-video {
+                display: none;
+            }
+            
+            .video-fallback {
+                z-index: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <!-- Fallback Background -->
+        <div class="video-fallback"></div>
+        
+        <!-- Video Background -->
+        <div class="video-background">
+            <video 
+                class="background-video" 
+                autoplay 
+                muted 
+                loop 
+                playsinline
+                id="backgroundVideo"
+                poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23764ba2;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1920' height='1080' fill='url(%23grad)' /%3E%3C/svg%3E"
+            >
+                <!-- Your converted MP4 file -->
+                <source src="https://res.cloudinary.com/dn8i34qlv/video/upload/v1752473310/background_e6yneu.mp4" type="video/mp4">
+                
+                <!-- If videos folder is in same directory as HTML -->
+                <!-- <source src="videos/background.mp4" type="video/mp4"> -->
+                
+                <!-- If MP4 file is in same folder as HTML -->
+                <!-- <source src="background.mp4" type="video/mp4"> -->
+                
+                <!-- Fallback message -->
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        
+        <!-- Video Loading Indicator -->
+        <div class="video-loading" id="videoLoading">
+            <div class="loader"></div>
+        </div>
+        
+        <!-- Color Overlay -->
+        <div class="video-overlay"></div>
+        
+        <!-- Main Content -->
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Swipe Once<span class="trademark">®</span>
+            </h1>
+            
+            <p class="hero-subtitle">Something incredible is loading...</p>
+            
+            <!-- Countdown Timer -->
+            <div class="countdown-container">
+                <div class="countdown">
+                    <div class="countdown-item">
+                        <span class="countdown-number" id="days">07</span>
+                        <span class="countdown-label">Days</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-number" id="hours">14</span>
+                        <span class="countdown-label">Hours</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-number" id="minutes">32</span>
+                        <span class="countdown-label">Minutes</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-number" id="seconds">45</span>
+                        <span class="countdown-label">Seconds</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Email Capture -->
+            <div class="email-section">
+                <h3 class="email-title">Be the First to Know</h3>
+                <form class="email-form" onsubmit="handleSubmit(event)">
+                    <input 
+                        type="email" 
+                        class="email-input" 
+                        placeholder="Enter your email"
+                        required
+                        id="emailInput"
+                    >
+                    <button type="submit" class="submit-button" id="submitBtn">
+                        Notify Me
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Video Controls (Optional) -->
+        <div class="video-controls">
+            <button class="control-btn" onclick="togglePlay()" id="playBtn">
+                ⏸️
+            </button>
+            <button class="control-btn" onclick="toggleMute()" id="muteBtn">
+                🔇
+            </button>
+        </div>
+    </section>
+
+    <script>
+        // ==========================================
+        // VIDEO MANAGEMENT
+        // ==========================================
+        const video = document.getElementById('backgroundVideo');
+        const videoLoading = document.getElementById('videoLoading');
+        const playBtn = document.getElementById('playBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        
+        // Hide loading when video loads
+        video.addEventListener('loadeddata', () => {
+            videoLoading.classList.add('hidden');
+        });
+        
+        // Fallback if video fails to load
+        video.addEventListener('error', () => {
+            videoLoading.classList.add('hidden');
+            console.log('Video failed to load, using fallback background');
+        });
+        
+        // Video control functions
+        function togglePlay() {
+            if (video.paused) {
+                video.play();
+                playBtn.textContent = '⏸️';
+            } else {
+                video.pause();
+                playBtn.textContent = '▶️';
+            }
+        }
+        
+        function toggleMute() {
+            video.muted = !video.muted;
+            muteBtn.textContent = video.muted ? '🔇' : '🔊';
+        }
+        
+        // ==========================================
+        // COUNTDOWN TIMER
+        // ==========================================
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const targetDate = now + (7 * 24 * 60 * 60 * 1000) + (14 * 60 * 60 * 1000) + (32 * 60 * 1000) + (45 * 1000);
+            const distance = targetDate - now;
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            document.getElementById('days').textContent = days.toString().padStart(2, '0');
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+        }
+        
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+        
+        // ==========================================
+        // FORM SUBMISSION
+        // ==========================================
+        function handleSubmit(event) {
+            event.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const emailInput = document.getElementById('emailInput');
+            const email = emailInput.value;
+            
+            // Update button state
+            submitBtn.textContent = 'Securing...';
+            submitBtn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                submitBtn.textContent = '✅ You\'re In!';
+                submitBtn.style.background = 'linear-gradient(45deg, #2ed573, #1e90ff)';
+                
+                // Show success message
+                setTimeout(() => {
+                    alert(`🚀 Welcome, ${email.split('@')[0]}!\n\nYou'll be the first to experience the revolution.`);
+                }, 500);
+                
+                // Reset form after delay
+                setTimeout(() => {
+                    submitBtn.textContent = 'Notify Me';
+                    submitBtn.style.background = 'linear-gradient(45deg, #ff4757, #ffa502)';
+                    submitBtn.disabled = false;
+                    emailInput.value = '';
+                }, 3000);
+            }, 2000);
+        }
+        
+        // ==========================================
+        // PERFORMANCE OPTIMIZATIONS
+        // ==========================================
+        
+        // Intersection Observer for video loading
+        const videoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Video is visible, ensure it's playing
+                    if (video.paused) {
+                        video.play().catch(e => {
+                            console.log('Video autoplay prevented:', e);
+                        });
+                    }
+                } else {
+                    // Video is not visible, pause to save resources
+                    if (!video.paused) {
+                        video.pause();
+                    }
+                }
+            });
+        });
+        
+        videoObserver.observe(video);
+        
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                video.pause();
+            } else {
+                video.play().catch(e => {
+                    console.log('Video play prevented:', e);
+                });
+            }
+        });
+        
+        // ==========================================
+        // MOBILE OPTIMIZATIONS
+        // ==========================================
+        
+        // Detect mobile devices
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+            // Reduce video quality on mobile
+            video.style.filter = 'blur(3px) brightness(0.6)';
+            
+            // Hide video controls on mobile
+            document.querySelector('.video-controls').style.display = 'none';
+        }
+        
+        // ==========================================
+        // INITIALIZE
+        // ==========================================
+        window.addEventListener('load', () => {
+            // Ensure video starts playing
+            video.play().catch(e => {
+                console.log('Autoplay prevented, showing play button');
+                playBtn.textContent = '▶️';
+            });
+        });
+    </script>
+</body>
+</html>
